@@ -1,0 +1,67 @@
+#!/bin/bash
+
+h_user="./user/"
+source=${h_user}"source/"
+report=${h_user}"backup-report"
+
+tmp="./.backup_tmp"
+
+dir=""
+
+function log() {
+    echo "$(date  "+%F %T"):$1" >> ${report}
+}
+
+#### create or last
+
+curr_d=$(date +%Y-%m-%d)
+last_d=$(ls -F ${h_user} | grep -E "^Backup-.*/$" | sort -n | tail -1 | sed 's!^Backup-\(.*\)/!\1!')
+
+curr_s=$(date -d ${curr_d} +%s)
+last_s=$(date -d ${last_d} +%s || echo 0)
+
+delta=$(( (${curr_s} - ${last_s}) / 60 / 60 / 24 ))
+
+#       delta   <  7
+if [[ ${delta} -lt 7 ]]; then
+    dir="${h_user}Backup-${last_d}/"
+    log "CHANGE ${dir}"
+else
+    dir="${h_user}Backup-${curr_d}/"
+    mkdir ${dir}
+    log "CREATE ${dir}"
+fi
+
+
+#### backup
+
+> ${tmp}
+
+for file in $(ls ${source})
+do
+    real_n="${source}${file}"
+    back_n="${dir}${file}"
+
+    if [[ -e ${back_n} ]]; then
+        real_l=$(du -b ${real_n} | awk '{ print $1 }')
+        back_l=$(du -b ${back_n} | awk '{ print $1 }')
+
+        if [[ ${real_l} -ne ${back_l} ]]; then
+            mv ${back_n} "${back_n}.${curr_d}"
+            cp ${real_n} ${back_n}
+            echo ${file} >> ${tmp}
+        fi
+    else
+        cp ${real_n} ${back_n}
+        echo ${file} >> ${report}
+    fi
+done
+
+#### log
+
+while read file
+do
+    echo "${file} ${file}.${curr_d}" >> ${report}
+done < ${tmp}
+
+rm ${tmp}

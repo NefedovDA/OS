@@ -1,0 +1,15 @@
+#!/bin/bash
+
+h_user="./user/"
+restore=${h_user}"restore/"
+
+dir=${h_user}$(ls -F ${h_user} | grep -E "^Backup-.*/$" | sort -n | tail -1)
+
+./create -d ${restore}
+
+for file in $(ls ${dir})
+do
+    if [[ -z $(echo ${file} | grep -E ".*\.[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}$") ]]; then
+        cp ${dir}${file} ${restore}${file}
+    fi
+done

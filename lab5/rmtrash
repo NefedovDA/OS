@@ -1,0 +1,22 @@
+#! /bin/bash
+
+trash=./.trash
+log=./.trash.log
+
+if [[ $# -ne 1 ]]; then
+    echo "ran as: rmtrash <name of file that will be deleted>"
+    exit 0
+fi
+
+f=$(readlink -f $1)
+
+./create -d ${trash}
+
+f_name=$(date "+%s%N")
+
+ln ${f} ${trash}/${f_name}
+rm ${f}
+
+./create -f ${log}
+
+echo "${f}:${f_name}" >> ${log}

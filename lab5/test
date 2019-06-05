@@ -1,0 +1,17 @@
+#!/bin/bash
+rm -f -r ./.trash/
+rm -f ./.tash.log
+
+mkdir ./test1/
+mkdir -p ./test2/sub_dir
+
+echo "hello 1" > ./test1/hello1.ms
+echo "hello 2" > ./test2/hello2.ms
+echo "hello sub dir" > ./test2/sub_dir/hello2.ms
+
+./rmtrash test1/hello1.ms
+./rmtrash test2/hello2.ms
+./rmtrash test2/sub_dir/hello2.ms
+
+rm -r ./test1
+rm -r ./test2

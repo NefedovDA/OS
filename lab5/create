@@ -1,0 +1,19 @@
+#!/bin/bash
+
+case $1 in
+    "-d")
+        if [[ -d $2 ]]; then :
+        else
+            mkdir $2
+        fi
+        ;;
+    "-f")
+        if [[ -f $2 ]]; then :
+        else
+            touch $2
+        fi
+        ;;
+    *)
+        echo "use as: create -f|-d <target name>"
+        ;;
+esac

@@ -1,0 +1,69 @@
+#!/bin/bash
+
+trash=./.trash/
+log=./.trash.log
+default_dir="./"
+
+name=$1
+p_n=$(echo ${name} | sed 's!\.!\\\.!g')
+
+line=""
+path=""
+
+function delete() {
+    echo "untrash '${path}'..."
+    if [[ -e ${path} ]]; then
+        echo "Name $path already used =("
+    else
+        local dir=$(echo ${path} | sed 's!/[^/]*$!/!')
+        if [[ -d ${dir} ]]; then :
+        else
+            echo "File will be untrash to $default_dir"
+            local  dir=${default_dir}
+        fi
+        local f=${dir}"$name"
+        if [[ -e  ${f} ]]; then
+            echo "Name $f already used =("
+        else
+            local copy=${trash}$(echo ${line} | awk -F : '{ print $2 }')
+            ln ${copy} ${f}
+            rm ${copy}
+            sed -i 's!'${line}'!!g' ${log}
+            echo "Done!"
+            exit 0
+        fi
+    fi
+}
+
+function ask() {
+    echo "Do you mean file: '${path}'?"
+    echo "Enter Y(y) if so and N(n) if no."
+
+    read ans
+
+    case ${ans} in
+    Y|y)
+        delete
+        ;;
+    N|n)
+        ;;
+    *)
+        echo "Incorrect input."
+        ask
+        ;;
+    esac
+}
+
+if [[ $# -ne 1 ]]; then
+    echo "ran as: untrash <name of file that will be untrash>"
+    exit 0
+fi
+
+for line in $(cat ./.trash.log | awk -F : '{ if (match($1,/^.*\/'${p_n}'$/)) print $0 }')
+do
+    echo ${line}
+    path=$(echo ${line} | awk -F : '{ print $1 }')
+    ask
+done
+
+echo "No one file was selected."
