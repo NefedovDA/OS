@@ -10,6 +10,20 @@ p_n=$(echo ${name} | sed 's!\.!\\\.!g')
 line=""
 path=""
 
+tmp=./.untrash.tmp
+
+function zip_log() {
+    > ${tmp}
+	while read line 
+	do
+	    if [[ -n ${line} ]]; then
+	        echo ${line} >> ${tmp}
+        fi
+	done < ${log}
+	rm ${log}
+	mv ${tmp} ${log}
+}
+
 function delete() {
     echo "untrash '${path}'..."
     if [[ -e ${path} ]]; then
@@ -30,6 +44,7 @@ function delete() {
             rm ${copy}
             sed -i 's!'${line}'!!g' ${log}
             echo "Done!"
+            zip_log
             exit 0
         fi
     fi
